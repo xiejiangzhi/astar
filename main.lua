@@ -158,6 +158,7 @@ function love.draw()
   lg.setColor(0, 0, 1)
   lg.circle('fill', (goal_x + 0.5) * cell_w, (goal_y + 0.5) * cell_h, cell_h / 3)
 
+  lg.setColor(1, 1, 1)
   local str = ''
   str = str..string.format("\n FPS: %i", love.timer.getFPS())
 

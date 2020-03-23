@@ -8,6 +8,8 @@ We just tell the algo how to get node, neighbors and estimate cost.
 
 Base algorithm logic referenced [a-star-lua](https://github.com/lattejed/a-star-lua)
 
+![img](./example.png)
+
 ## Use
 
 A example for grid map

@@ -21,7 +21,8 @@ local map = {}
 local cached_nodes = {}
 
 -- Node must be able to check if they are the same
--- so the example cannot directly return a different table for same coord
+-- Cannot directly return different tables for the same coord
+-- The library doesn't change nodes, so you able to reuse your node or create a C struct for faster
 function map:get_node(x, y)
   local row = cached_nodes[y]
   if not row then row = {}; cached_nodes[y] = row end

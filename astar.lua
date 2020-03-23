@@ -2,9 +2,9 @@
 --
 -- map:
 --  get_node(x, y)
---  get_neighbors(x, y) -- all moveable neighbors
+--  get_neighbors(node) -- all moveable neighbors
 --  get_cost(from_node, to_node)
---  estimate_cost(from_node, to_node)
+--  estimate_cost(start_node, goal_node)
 --
 -- node:
 --  x:

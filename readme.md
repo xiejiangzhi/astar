@@ -46,12 +46,13 @@ function map:get_neighbors(node)
 end
 
 -- Cost of two adjacent nodes.
--- Differnt cost for node and other distance mode, use what you like
+-- Distance, distance + cost or other comparison value you want
 function map:get_cost(from_node, to_node)
   return math.sqrt(math.pow(from_node.x - to_node.x, 2) + math.pow(from_node.y - to_node.y, 2))
 end
 
 -- For heuristic. Estimate cost of current node to goal node
+-- As close to the real cost as possible
 function map:estimate_cost(node, goal_node)
   return self:get_cost(node, goal_node)
 end

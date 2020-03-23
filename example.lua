@@ -4,7 +4,8 @@ local map = {}
 local cached_nodes = {}
 
 -- Node must be able to check if they are the same
--- so the example cannot directly return a different table for same coord
+-- Cannot directly return different tables for the same coord
+-- The library doesn't change nodes, so you able to reuse your node or create a C struct for faster
 function map:get_node(x, y)
   local row = cached_nodes[y]
   if not row then row = {}; cached_nodes[y] = row end
@@ -28,12 +29,13 @@ function map:get_neighbors(node)
 end
 
 -- Cost of two adjacent nodes.
--- Differnt cost for node and other distance mode, use what you like
+-- Distance, distance + cost or other comparison value you want
 function map:get_cost(from_node, to_node)
   return math.sqrt(math.pow(from_node.x - to_node.x, 2) + math.pow(from_node.y - to_node.y, 2))
 end
 
 -- For heuristic. Estimate cost of current node to goal node
+-- As close to the real cost as possible
 function map:estimate_cost(node, goal_node)
   return self:get_cost(node, goal_node)
 end
@@ -50,4 +52,3 @@ if path then
 else
   print("Not found path")
 end
-

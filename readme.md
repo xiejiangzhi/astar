@@ -1,7 +1,7 @@
 AStar
 ========
 
-An other star library. You can use the node or map mode you like(gird, point, mesh or infinite map).
+An other A* library. You can use the node or map mode you like(gird, point, mesh or infinite map).
 
 The library don't need to init a map and don't care the size of your map.
 We just tell the algo how to get node, neighbors and estimate cost.

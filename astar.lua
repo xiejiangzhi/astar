@@ -34,7 +34,8 @@ function M:find(start_x, start_y, goal_x, goal_y)
   local start = map:get_node(start_x, start_y)
   local goal = map:get_node(goal_x, goal_y)
 
-	local openset = { start, [start] = true }
+	local openset_score = { start }
+  local openset = { [start] = true }
 	local closedset = {}
 	local came_from = {}
 
@@ -44,18 +45,18 @@ function M:find(start_x, start_y, goal_x, goal_y)
 	f_score[start] = h_score[start]
 
   local compare_fn = function(a, b)
-    return f_score[a] > f_score[b]
+    return f_score[a] >= f_score[b]
   end
 
-	while #openset > 0 do
-		local current = openset[#openset]
-		openset[#openset] = nil
+	while #openset_score > 0 do
+		local current = openset_score[#openset_score]
+		openset_score[#openset_score] = nil
     openset[current] = nil
 
 		if current == goal then
 			local path = private.unwind_path({}, came_from, goal)
 			table.insert(path, goal)
-			return path
+			return path, g_score, h_score, f_score
 		end
 		closedset[current] = true
 
@@ -64,21 +65,17 @@ function M:find(start_x, start_y, goal_x, goal_y)
 			if not closedset[neighbor] then
 				local tentative_g_score = g_score[current] + map:get_cost(current, neighbor)
 
-        local in_openset = openset[neighbor]
-				if not in_openset or tentative_g_score < g_score[neighbor] then
+        local openset_idx = openset[neighbor]
+				if not openset_idx or tentative_g_score < g_score[neighbor] then
 					came_from[neighbor] = current
 					g_score[neighbor] = tentative_g_score
-          local h = h_score[neighbor]
-          if not h then
-            h = map:estimate_cost(neighbor, goal)
-            h_score[neighbor] = h
-          end
-					f_score[neighbor] = tentative_g_score + h
+          h_score[neighbor] = h_score[neighbor] or map:estimate_cost(neighbor, goal)
+					f_score[neighbor] = tentative_g_score + h_score[neighbor]
 
-					if not in_openset then
-						private.binsert(openset, neighbor, compare_fn)
-            openset[neighbor] = true
-					end
+          if openset_idx then
+            table.remove(openset_score, openset_idx)
+          end
+          openset[neighbor] = private.binsert(openset_score, neighbor, compare_fn)
 				end
 			end
 		end
@@ -123,6 +120,7 @@ function private.binsert(t, value, compare_fn)
   end
 
   table.insert(t, i_mid + i_state, value)
+  return i_mid + i_state
 end
 
 return M

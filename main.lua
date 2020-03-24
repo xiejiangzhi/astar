@@ -1,7 +1,7 @@
 local AStar = require 'astar'
 
 local map = {}
-local map_w, map_h = 35, 28
+local map_w, map_h = 36, 24
 local cached_nodes = {}
 local checked_nodes = {}
 
@@ -48,16 +48,16 @@ function map:estimate_cost(node, goal_node)
 end
 
 local finder = AStar.new(map)
-local path
+local path, gscore, hscore
 local start_x, start_y = 1, 1
-local goal_x, goal_y = 30, 20
+local goal_x, goal_y = 34, 22
 local find_time = 0
 
 local function update_path()
   checked_nodes = {}
 
   local st = love.timer.getTime()
-  path = finder:find(start_x, start_y, goal_x, goal_y)
+  path, gscore, hscore = finder:find(start_x, start_y, goal_x, goal_y)
   find_time = (love.timer.getTime() - st) * 1000
 
   if path then
@@ -140,9 +140,12 @@ function love.draw()
   end
 
   if checked_nodes then
-    lg.setColor(1, 0, 0, 0.2)
     for _, node in ipairs(checked_nodes) do
-      lg.rectangle('fill', node.x * cell_w, node.y * cell_h, cell_w, cell_h)
+      local x, y = node.x * cell_w, node.y * cell_h
+      lg.setColor(1, 0, 0, 0.2)
+      lg.rectangle('fill', x, y, cell_w, cell_h)
+      lg.setColor(0.7, 0.7, 0.9)
+      lg.print(string.format('%.1f\n%.1f', gscore[node], hscore[node]), x + 3, y + 3)
     end
   end
 

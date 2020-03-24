@@ -81,7 +81,7 @@ function M:find(start_x, start_y, goal_x, goal_y)
 		end
 	end
 
-	return nil -- no valid path
+	return nil, g_score, h_score, f_score -- no valid path
 end
 
 ----------------------------

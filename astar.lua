@@ -14,6 +14,7 @@
 local M = {}
 M.__index = M
 local private = {}
+local inf = 1 / 0
 
 function M.new(...)
   local obj = setmetatable({}, M)
@@ -29,13 +30,12 @@ function M:init(map)
   )
 end
 
-function M:find(start_x, start_y, goal_x, goal_y)
+function M:find(start_x, start_y, goal_x, goal_y, user_data)
   local map = self.map
   local start = map:get_node(start_x, start_y)
   local goal = map:get_node(goal_x, goal_y)
 
-	local openset_score = { start }
-  local openset = { [start] = true }
+	local openset = { [start] = user_data or true }
 	local closedset = {}
 	local came_from = {}
 
@@ -44,13 +44,8 @@ function M:find(start_x, start_y, goal_x, goal_y)
   h_score[start] = map:estimate_cost(start, goal)
 	f_score[start] = h_score[start]
 
-  local compare_fn = function(a, b)
-    return f_score[a] >= f_score[b]
-  end
-
-	while #openset_score > 0 do
-		local current = openset_score[#openset_score]
-		openset_score[#openset_score] = nil
+	while next(openset) do
+		local current, node_user_data = private.pop_best_node(openset, f_score)
     openset[current] = nil
 
 		if current == goal then
@@ -60,10 +55,11 @@ function M:find(start_x, start_y, goal_x, goal_y)
 		end
 		closedset[current] = true
 
-		local neighbors = map:get_neighbors(current)
+    local from_node = came_from[current]
+		local neighbors = map:get_neighbors(current, from_node, node_user_data)
 		for _, neighbor in ipairs (neighbors) do
 			if not closedset[neighbor] then
-				local tentative_g_score = g_score[current] + map:get_cost(current, neighbor)
+				local tentative_g_score = g_score[current] + map:get_cost(current, neighbor, from_node, node_user_data)
 
         local openset_idx = openset[neighbor]
 				if not openset_idx or tentative_g_score < g_score[neighbor] then
@@ -72,10 +68,11 @@ function M:find(start_x, start_y, goal_x, goal_y)
           h_score[neighbor] = h_score[neighbor] or map:estimate_cost(neighbor, goal)
 					f_score[neighbor] = tentative_g_score + h_score[neighbor]
 
-          if openset_idx then
-            table.remove(openset_score, openset_idx)
+          if map.get_user_data then
+            openset[neighbor] = map.get_user_data(current, neighbor, from_node, node_user_data) or true
+          else
+            openset[neighbor] = true
           end
-          openset[neighbor] = private.binsert(openset_score, neighbor, compare_fn)
 				end
 			end
 		end
@@ -86,6 +83,21 @@ end
 
 ----------------------------
 
+-- return: node, user_data
+function private.pop_best_node(set, score)
+  local best, node, ud = inf, nil, nil
+
+  for k, v in pairs(set) do
+    local s = score[k]
+    if s < best then
+      best, node, ud = s, k, v
+    end
+  end
+  set[node] = nil
+
+  return node, ud
+end
+
 function private.unwind_path(flat_path, map, current_node)
 	if map[current_node] then
 		table.insert(flat_path, 1, map [ current_node ])
@@ -93,34 +105,6 @@ function private.unwind_path(flat_path, map, current_node)
 	else
 		return flat_path
 	end
-end
-
--- binary insert to a sorted table
--- http://lua-users.org/wiki/BinaryInsert
-function private.binsert(t, value, compare_fn)
-  --  Initialise numbers
-  local i_start, i_end, i_mid, i_state = 1, #t, 1, 0
-  local v1, v2, cr
-  -- Get insert position
-  while i_start <= i_end do
-    -- calculate middle
-    i_mid = math.floor( (i_start + i_end ) / 2 )
-    v1, v2 = value, t[i_mid]
-    if compare_fn then
-      cr = compare_fn(v1, v2)
-    else
-      cr = v1 < v2
-    end
-
-    if cr then
-      i_end, i_state = i_mid - 1, 0
-    else
-      i_start, i_state = i_mid + 1, 1
-    end
-  end
-
-  table.insert(t, i_mid + i_state, value)
-  return i_mid + i_state
 end
 
 return M

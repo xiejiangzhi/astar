@@ -37,7 +37,7 @@ local neighbors_offset = {
   { -1, 1 }, { 0, 1 }, { 1, 1 },
 }
 -- Return all neighbor nodes. Means a target that can be moved from the current node
-function map:get_neighbors(node)
+function map:get_neighbors(node, from_node, user_data)
   local nodes = {}
   for i, offset in ipairs(neighbors_offset) do
     nodes[i] = self:get_node(node.x + offset[1], node.y + offset[2])

@@ -9,7 +9,7 @@ local lg = love.graphics
 
 -- Node must be able to check if they are the same
 -- so the example cannot directly return a different table for same coord
-function map:get_node(x, y)
+local function get_node(x, y)
   local row = cached_nodes[y]
   if not row then row = {}; cached_nodes[y] = row end
   local node = row[x]
@@ -27,7 +27,7 @@ function map:get_neighbors(node)
   local nodes = {}
   local x, y = node.x, node.y
   for i, offset in ipairs(neighbors_offset) do
-    local tnode = self:get_node(x + offset[1], y + offset[2])
+    local tnode = get_node(x + offset[1], y + offset[2])
     if tnode.cost >= 0 and tnode.x >= 0 and tnode.x < map_w and tnode.y >=0 and tnode.y < map_h then
       nodes[#nodes + 1] = tnode
     end
@@ -57,7 +57,7 @@ local function update_path()
   checked_nodes = {}
 
   local st = love.timer.getTime()
-  path, gscore, hscore = finder:find(start_x, start_y, goal_x, goal_y)
+  path, gscore, hscore = finder:find(get_node(start_x, start_y), get_node(goal_x, goal_y))
   find_time = (love.timer.getTime() - st) * 1000
 
   if path then
@@ -104,7 +104,7 @@ function love.update(dt)
   end
 
   if new_cost then
-    local node = map:get_node(mcx, mcy)
+    local node = get_node(mcx, mcy)
     if node.cost ~= new_cost then
       node.cost = new_cost
       changed = true
@@ -124,7 +124,7 @@ function love.draw()
   for i = 0, h - 1 do
     for j = 0, w - 1 do
       local x, y = j * cell_w, i * cell_h
-      local node = map:get_node(j, i)
+      local node = get_node(j, i)
       local cost = node.cost
       if cost ~= 0 then
         if cost == -1 then
@@ -166,7 +166,7 @@ function love.draw()
   str = str..string.format("\n FPS: %i", love.timer.getFPS())
 
   str = str..'\n'
-  local mnode = map:get_node(mcx, mcy)
+  local mnode = get_node(mcx, mcy)
   str = str..string.format("\n mouse coord: %i, %i", mcx, mcy)
   str = str..string.format("\n mouse node cost: %i", mnode.cost)
 

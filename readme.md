@@ -37,6 +37,8 @@ local neighbors_offset = {
   { -1, 1 }, { 0, 1 }, { 1, 1 },
 }
 -- Return all neighbor nodes. Means a target that can be moved from the current node
+-- add_neighbor_cb: function(new_node, cost)
+--    cost is optional, call map:get_cost to get cost if no cost value
 function map:get_neighbors(node, from_node, add_neighbor_cb, userdata)
   for i, offset in ipairs(neighbors_offset) do
     add_neighbor_cb(get_node(node.x + offset[1], node.y + offset[2]))

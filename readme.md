@@ -37,29 +37,28 @@ local neighbors_offset = {
   { -1, 1 }, { 0, 1 }, { 1, 1 },
 }
 -- Return all neighbor nodes. Means a target that can be moved from the current node
-function map:get_neighbors(node, from_node)
-  local nodes = {}
+function map:get_neighbors(node, from_node, add_neighbor_cb, userdata)
   for i, offset in ipairs(neighbors_offset) do
-    nodes[i] = get_node(node.x + offset[1], node.y + offset[2])
+    add_neighbor_cb(get_node(node.x + offset[1], node.y + offset[2]))
   end
-  return nodes
 end
 
 -- Cost of two adjacent nodes.
 -- Distance, distance + cost or other comparison value you want
-function map:get_cost(from_node, to_node)
+function map:get_cost(from_node, to_node, userdata)
   return math.sqrt(math.pow(from_node.x - to_node.x, 2) + math.pow(from_node.y - to_node.y, 2))
 end
 
 -- For heuristic. Estimate cost of current node to goal node
 -- As close to the real cost as possible
-function map:estimate_cost(node, goal_node)
+function map:estimate_cost(node, goal_node, userdata)
   return self:get_cost(node, goal_node)
 end
 
 local finder = AStar.new(map)
 local start, goal = get_node(1, 1), get_node(3, 4)
-local path = finder:find(start, goal)
+local userdata = { 'mydata' }
+local path = finder:find(start, goal, userdata)
 
 if path then
   for _, node in ipairs(path) do

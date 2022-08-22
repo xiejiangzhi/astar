@@ -1,14 +1,15 @@
 -- AStar
 --
 -- map:
---  get_neighbors(node) -- all moveable neighbors
---  get_cost(from_node, to_node)
---  estimate_cost(start_node, goal_node)
+--  get_neighbors(node, from_node, add_neighbor_fn, userdata) -- all moveable neighbors
+--  get_cost(from_node, to_node, userdata)
+--  estimate_cost(start_node, goal_node, userdata)
 --
 -- node:
 --  x:
 --  y:
 --  ==: check two node is same
+--
 
 local M = {}
 M.__index = M
@@ -31,7 +32,7 @@ end
 
 -- start: start node
 -- goal: goal node
-function M:find(start, goal)
+function M:find(start, goal, userdata)
   local map = self.map
 
 	local openset = { [start] = true }
@@ -40,40 +41,43 @@ function M:find(start, goal)
 
 	local g_score, h_score, f_score = {}, {}, {}
 	g_score[start] = 0
-  h_score[start] = map:estimate_cost(start, goal)
+  h_score[start] = map:estimate_cost(start, goal, userdata)
 	f_score[start] = h_score[start]
+	local current
+
+	local add_neighbor_fn = function(neighbor, cost)
+		if not closedset[neighbor] then
+			if not cost then cost = map:get_cost(current, neighbor, userdata) end
+			local tentative_g_score = g_score[current] + cost
+
+			local openset_idx = openset[neighbor]
+			if not openset_idx or tentative_g_score < g_score[neighbor] then
+				came_from[neighbor] = current
+				g_score[neighbor] = tentative_g_score
+				h_score[neighbor] = h_score[neighbor] or map:estimate_cost(neighbor, goal, userdata)
+				f_score[neighbor] = tentative_g_score + h_score[neighbor]
+
+				openset[neighbor] = true
+			end
+		end
+	end
 
 	while next(openset) do
-		local current = private.pop_best_node(openset, f_score)
+		current = private.pop_best_node(openset, f_score)
     openset[current] = nil
 
 		if current == goal then
 			local path = private.unwind_path({}, came_from, goal)
 			table.insert(path, goal)
-			return path, g_score, h_score, f_score
+			return path, g_score, h_score, f_score, came_from
 		end
 		closedset[current] = true
 
     local from_node = came_from[current]
-		local neighbors = map:get_neighbors(current, from_node)
-		for _, neighbor in ipairs (neighbors) do
-			if not closedset[neighbor] then
-				local tentative_g_score = g_score[current] + map:get_cost(current, neighbor, from_node)
-
-        local openset_idx = openset[neighbor]
-				if not openset_idx or tentative_g_score < g_score[neighbor] then
-					came_from[neighbor] = current
-					g_score[neighbor] = tentative_g_score
-          h_score[neighbor] = h_score[neighbor] or map:estimate_cost(neighbor, goal)
-					f_score[neighbor] = tentative_g_score + h_score[neighbor]
-
-          openset[neighbor] = true
-				end
-			end
-		end
+		map:get_neighbors(current, from_node, add_neighbor_fn, userdata)
 	end
 
-	return nil, g_score, h_score, f_score -- no valid path
+	return nil, g_score, h_score, f_score, came_from -- no valid path
 end
 
 ----------------------------

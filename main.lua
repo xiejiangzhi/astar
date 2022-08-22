@@ -1,7 +1,7 @@
 local AStar = require 'astar'
 
 local map = {}
-local map_w, map_h = 36, 24
+local map_w, map_h = 42, 28
 local cached_nodes = {}
 local checked_nodes = {}
 
@@ -23,28 +23,26 @@ local neighbors_offset = {
   { -1, 1 }, { 0, 1 }, { 1, 1 },
 }
 -- Return all neighbor nodes. Means a target that can be moved from the current node
-function map:get_neighbors(node)
-  local nodes = {}
+function map:get_neighbors(node, from_node, add_neighbor_fn, userdata)
   local x, y = node.x, node.y
   for i, offset in ipairs(neighbors_offset) do
     local tnode = get_node(x + offset[1], y + offset[2])
     if tnode.cost >= 0 and tnode.x >= 0 and tnode.x < map_w and tnode.y >=0 and tnode.y < map_h then
-      nodes[#nodes + 1] = tnode
+      add_neighbor_fn(tnode)
     end
   end
-  return nodes
 end
 
 -- Cost of two adjacent nodes
-function map:get_cost(from_node, to_node)
+function map:get_cost(from_node, to_node, userdata)
   local dx, dy = from_node.x - to_node.x, from_node.y - to_node.y
   return math.sqrt(dx * dx + dy * dy) + (from_node.cost + to_node.cost) * 0.5
 end
 
 -- For heuristic. Estimate cost of current node to goal node
-function map:estimate_cost(node, goal_node)
+function map:estimate_cost(node, goal_node, userdata)
   checked_nodes[#checked_nodes + 1] = node
-  return self:get_cost(node, goal_node) * 1.5 + (node.cost + goal_node.cost) * 0.5
+  return self:get_cost(node, goal_node, userdata) * 1.5 + (node.cost + goal_node.cost) * 0.5
 end
 
 local finder = AStar.new(map)

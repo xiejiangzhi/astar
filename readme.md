@@ -7,6 +7,7 @@ The library don't need to init a map and don't care the size of your map.
 We just tell the algo how to get node, neighbors and estimate cost.
 
 Base algorithm logic referenced [a-star-lua](https://github.com/lattejed/a-star-lua)
+BinaryHeap from [BinaryHeap](https://github.com/Tieske/binaryheap.lua)
 
 ![img](./example.png)
 

@@ -1,7 +1,7 @@
 local AStar = require 'astar'
 
 local map = {}
-local map_w, map_h = 42, 28
+local map_w, map_h = 84, 56
 local cached_nodes = {}
 local checked_nodes = {}
 
@@ -79,12 +79,12 @@ function love.update(dt)
   local changed = false
 
   local mdown = love.mouse.isDown
-  if mdown(1) and start_x ~= mcx and start_y ~= mcy then
+  if mdown(1) and (start_x ~= mcx or start_y ~= mcy) then
     start_x, start_y = mcx, mcy
     changed = true
   end
 
-  if mdown(2) and goal_x ~= mcx and goal_y ~= mcy then
+  if mdown(2) and (goal_x ~= mcx or goal_y ~= mcy) then
     goal_x, goal_y = mcx, mcy
     changed = true
   end
@@ -137,15 +137,15 @@ function love.draw()
     end
   end
 
-  if checked_nodes then
-    for _, node in ipairs(checked_nodes) do
-      local x, y = node.x * cell_w, node.y * cell_h
-      lg.setColor(1, 0, 0, 0.2)
-      lg.rectangle('fill', x, y, cell_w, cell_h)
-      lg.setColor(0.7, 0.7, 0.9)
-      lg.print(string.format('%.1f\n%.1f', gscore[node], hscore[node]), x + 3, y + 3)
-    end
-  end
+  -- if checked_nodes then
+  --   for _, node in ipairs(checked_nodes) do
+  --     local x, y = node.x * cell_w, node.y * cell_h
+  --     lg.setColor(1, 0, 0, 0.2)
+  --     lg.rectangle('fill', x, y, cell_w, cell_h)
+  --     lg.setColor(0.7, 0.7, 0.9)
+  --     lg.print(string.format('%.1f\n%.1f', gscore[node], hscore[node]), x + 3, y + 3)
+  --   end
+  -- end
 
   if path then
     lg.setColor(0, 1, 0, 0.4)
@@ -167,6 +167,7 @@ function love.draw()
   local mnode = get_node(mcx, mcy)
   str = str..string.format("\n mouse coord: %i, %i", mcx, mcy)
   str = str..string.format("\n mouse node cost: %i", mnode.cost)
+  str = str..string.format("\n mouse node path score: %i", gscore[mnode] or -1)
 
   str = str..'\n'
   str = str..string.format("\n checked nodes: %i", #checked_nodes)
